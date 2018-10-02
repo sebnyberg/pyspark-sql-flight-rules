@@ -15,7 +15,6 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Reading files](#reading-files)
   - [Read a CSV file](#read-a-csv-file)
 - [Merging dataframes](#merging-dataframes)
@@ -46,7 +45,7 @@ df = spark.read.csv('path/to/file.csv', sep=';', header=True, inferSchema=True)
 
 ## Merging dataframes
 
-### Adding a dataframe to the bottom of another dataframe
+### Add a dataframe to the bottom of another dataframe
 
 DataFrame 1:
 
@@ -77,7 +76,7 @@ Use the sql function `union`:
 df1.union(df2).show()
 ```
 
-### Merging one dataframe to the end of another dataframe
+### Merge a dataframe to the end of another dataframe
 
 DataFrame 1:
 
@@ -197,7 +196,7 @@ joined_df = (
 joined_df.show()
 ```
 
-## Change column values
+## Changing column values
 
 ### Change column type
 
