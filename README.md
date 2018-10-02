@@ -15,7 +15,22 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Repositories](#repositories)
+
+- [Reading files](#reading-files)
+  - [Read a CSV file](#read-a-csv-file)
+- [Merging dataframes](#merging-dataframes)
+  - [Adding a dataframe to the bottom of another dataframe](#adding-a-dataframe-to-the-bottom-of-another-dataframe)
+  - [Merging one dataframe to the end of another dataframe](#merging-one-dataframe-to-the-end-of-another-dataframe)
+- [Adding columns](#adding-columns)
+  - [Add a new column with the same value for all rows](#add-a-new-column-with-the-same-value-for-all-rows)
+  - [Add a column from another dataframe](#add-a-column-from-another-dataframe)
+- [Change column values](#change-column-values)
+  - [Change column type](#change-column-type)
+- [Renaming columns](#renaming-columns)
+  - [Rename a single column, keep others the same](#rename-a-single-column-keep-others-the-same)
+  - [Rename many columns](#rename-many-columns)
+- [Conditional filtering](#conditional-filtering)
+  - [Show rows which are (not) null](#show-rows-which-are-not-null)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
