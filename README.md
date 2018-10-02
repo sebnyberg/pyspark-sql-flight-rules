@@ -76,7 +76,7 @@ Use the sql function `union`:
 df1.union(df2).show()
 ```
 
-### Merge a dataframe to the end of another dataframe
+### Add a dataframe to the right end of another dataframe
 
 DataFrame 1:
 
