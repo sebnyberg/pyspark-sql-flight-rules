@@ -1,10 +1,12 @@
 # PySpark SQL Flight Rules
 
-Learning how to use PySpark SQL is not all so straightforward as one would hope. This repository serves as a collection of answers to common scenarios you might find yourself in as you embark on your journey into pyspark sql.
+Learning how to use PySpark SQL is not as straightforward as one would hope.
+
+This repository is an effort to summarize answers to scenarios I've found myself in as I've journeyed into PySpark land.
 
 Note that this guide is not for PySpark RDD.
 
-All snippets below assume that you have pyspark installed and available, and that the spark session is initialized like so:
+All snippets below assume that you have PySpark installed and available, and that the SparkSession is initialized like so:
 
 ```python
 from pyspark.sql import SparkSession
@@ -25,9 +27,9 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
     - [I want a summary of the DataFrame](#i-want-a-summary-of-the-dataframe)
   - [DataFrame -> DataFrame](#dataframe---dataframe)
     - [I want to limit the number of rows](#i-want-to-limit-the-number-of-rows)
-    - [I want to select some columns](#i-want-to-select-some-columns)
-  - [I want to convert my PySpark DataFrame to a Pandas DataFrame](#i-want-to-convert-my-pyspark-dataframe-to-a-pandas-dataframe)
-  - [I want to convert my Pandas DataFrame to a PySpark DataFrame](#i-want-to-convert-my-pandas-dataframe-to-a-pyspark-dataframe)
+    - [I want to select columns by name](#i-want-to-select-columns-by-name)
+    - [I want to convert my PySpark DataFrame to a Pandas DataFrame](#i-want-to-convert-my-pyspark-dataframe-to-a-pandas-dataframe)
+    - [I want to convert my Pandas DataFrame to a PySpark DataFrame](#i-want-to-convert-my-pandas-dataframe-to-a-pyspark-dataframe)
   - [DataFrame -> Rows](#dataframe---rows)
     - [I want to extract top rows](#i-want-to-extract-top-rows)
     - [I want to extract data from the DataFrame as a list](#i-want-to-extract-data-from-the-dataframe-as-a-list)
@@ -87,20 +89,20 @@ df.show()
 df.limit(1).show()
 ```
 
-#### I want to select some columns
+#### I want to select columns by name
 
 ```python
 df.select('name', 'age').show()
 df.select(['name', 'age']).show()
 ```
 
-### I want to convert my PySpark DataFrame to a Pandas DataFrame
+#### I want to convert my PySpark DataFrame to a Pandas DataFrame
 
 ```python
 df.toPandas()
 ```
 
-### I want to convert my Pandas DataFrame to a PySpark DataFrame
+#### I want to convert my Pandas DataFrame to a PySpark DataFrame
 
 ```python
 data = {
