@@ -29,6 +29,159 @@ If `header` is set to `False`, the header will be skipped.
 df = spark.read.csv('path/to/file.csv', sep=';', header=True, inferSchema=True)
 ```
 
+## Merging dataframes
+
+### Adding a dataframe to the bottom of another dataframe
+
+DataFrame 1:
+
+| name  | address     |
+| ----- | ----------- |
+| Bob   | Brick St. 2 |
+| Alice | Olsvagen 12 |
+
+DataFrame 2:
+
+| name  | address                |
+| ----- | ---------------------- |
+| Peter | Bellevue               |
+| Tim   | Madison Circle Guarden |
+
+Goal:
+
+| name  | address                |
+| ----- | ---------------------- |
+| Bob   | Brick St. 2            |
+| Alice | Olsvagen 12            |
+| Peter | Bellevue               |
+| Tim   | Madison Circle Guarden |
+
+Use the sql function `union`:
+
+```python
+df1.union(df2).show()
+```
+
+### Merging one dataframe to the end of another dataframe
+
+DataFrame 1:
+
+| name  | address     |
+| ----- | ----------- |
+| Bob   | Brick St. 2 |
+| Alice | Olsvagen 12 |
+
+DataFrame 2:
+
+| age | zip   |
+| --- | ----- |
+| 28  | 21533 |
+| 28  | 21475 |
+
+Goal:
+
+| name  | address     | age | zip   |
+| ----- | ----------- | --- | ----- |
+| Bob   | Brick St. 2 | 28  | 21533 |
+| Alice | Olsvagen 12 | 28  | 21475 |
+
+Plan:
+
+1. Add a temporary, join column in both dataframes which is identical
+2. Join both data frames with a full outer join
+3. Drop the temporary join column
+
+```python
+from pyspark.sql.functions import monotonically_increasing_id
+
+joined_df = (
+    df1
+        .withColumn('joincol', monotonically_increasing_id())
+        .join(
+            df2
+                .withColumn('joincol', monotonically_increasing_id()),
+                on='joincol',
+                how='outer'
+        )
+        .drop('joincol')
+)
+joined_df.show()
+```
+
+## Adding columns
+
+### Add a new column with the same value for all rows
+
+DataFrame:
+
+| name  | address     |
+| ----- | ----------- |
+| Bob   | Brick St. 2 |
+| Alice | Olsvagen 12 |
+
+Goal:
+
+| name  | address     | age |
+| ----- | ----------- | --- |
+| Bob   | Brick St. 2 | 28  |
+| Alice | Olsvagen 12 | 28  |
+
+Add a new column with a literal value using `lit`:
+
+```python
+from pyspark.sql.functions import lit
+
+df.withColumn('age', lit(28))
+```
+
+### Add a column from another dataframe
+
+DataFrame 1:
+
+| name  | address     |
+| ----- | ----------- |
+| Bob   | Brick St. 2 |
+| Alice | Olsvagen 12 |
+
+DataFrame 2:
+
+| age | zip   |
+| --- | ----- |
+| 28  | 21533 |
+| 28  | 21475 |
+
+Goal:
+
+| name  | address     | age |
+| ----- | ----------- | --- |
+| Bob   | Brick St. 2 | 28  |
+| Alice | Olsvagen 12 | 28  |
+
+Plan:
+
+1. Select the age column from the second dataframe
+2. Add a temporary, join column in both dataframes which is identical
+3. Join both data frames with a full outer join
+4. Drop the temporary join column
+
+```python
+from pyspark.sql.functions import monotonically_increasing_id
+
+joined_df = (
+    df1
+        .withColumn('joincol', monotonically_increasing_id())
+        .join(
+            df2
+                .select('age')
+                .withColumn('joincol', monotonically_increasing_id()),
+                on='joincol',
+                how='outer'
+        )
+        .drop('joincol')
+)
+joined_df.show()
+```
+
 ## Conditional filtering
 
 ### Show rows which are (not) null
