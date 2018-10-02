@@ -35,12 +35,80 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
 
 ## Reading files
 
-### Read a CSV file
+### I want to read a CSV file
 
 If `header` is set to `False`, the header will be skipped.
 
 ```python
 df = spark.read.csv('path/to/file.csv', sep=';', header=True, inferSchema=True)
+```
+
+## DataFrame operations
+
+### DataFrame properties
+
+#### I want to know the types of the DataFrame columns
+
+```python
+df.printSchema()
+```
+
+#### I want to know the number of rows in the DataFrame
+
+```python
+df.count()
+```
+
+#### I want a summary of the DataFrame
+
+```python
+df.show()
+```
+
+### DataFrame -> DataFrame
+
+#### I want to limit the number of rows
+
+```python
+df.limit(1).show()
+```
+
+#### I want to select some columns
+
+```python
+df.select('name', 'age').show()
+df.select(['name', 'age']).show()
+```
+
+### I want to convert my PySpark DataFrame to a Pandas DataFrame
+
+```python
+df.toPandas()
+```
+
+### I want to convert my Pandas DataFrame to a PySpark DataFrame
+
+```python
+data = {
+    'name': ['Alice', 'Bob'],
+    'age': [28, 28]
+}
+pandas_df = pd.DataFrame(data=data)
+pyspark_df = spark.createDataFrame(pandas_df)
+```
+
+### DataFrame -> Rows
+
+#### I want to extract top rows
+
+```python
+df.head(5)
+```
+
+#### I want to extract data from the DataFrame as a list
+
+```python
+df.collect()
 ```
 
 ## Merging dataframes
