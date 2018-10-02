@@ -17,7 +17,6 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Reading files](#reading-files)
   - [I want to read a CSV file](#i-want-to-read-a-csv-file)
 - [DataFrame operations](#dataframe-operations)
@@ -59,7 +58,7 @@ If `header` is set to `False`, the header will be skipped.
 df = spark.read.csv('path/to/file.csv', sep=';', header=True, inferSchema=True)
 ```
 
-## DataFrame operations
+## Basic DataFrame operations
 
 ### DataFrame properties
 
@@ -81,9 +80,15 @@ df.count()
 df.show()
 ```
 
+#### I want a statistical summary of columns in the DataFrame (avg, mean, std)
+
+```python
+df.describe().show()
+```
+
 ### DataFrame -> DataFrame
 
-#### I want to limit the number of rows
+#### I want to select N rows
 
 ```python
 df.limit(1).show()
@@ -96,10 +101,32 @@ df.select('name', 'age').show()
 df.select(['name', 'age']).show()
 ```
 
+#### I want to filter rows based off a column value
+
+The filter function `filter` is an alias for `where`. Both can be used interchangably.
+
+Beware that in SQL, the equality operator is a single equals sign `=`. Below are some examples with different ways of referencing dataframe columns, I recommend using the `df['column_name']` or `df.column_name` syntax because it gives you autocompletion.
+
+```python
+df.filter(df.name == 'Bob').show()
+df.filter(df['name'] == 'Bob').show()
+df.filter(col('name') == 'Bob').show()
+df.filter("name = 'Bob'").show()
+```
+
+#### I want to filter rows based off many column values
+
+Filtering many column values requires you to use bitwise operators (and: `&`, or: `|`) and to evaluate conditions inside parenthesis.
+
+```python
+df.where((df.address.contains('st')) & (df.age > 25)).show()
+df.where("address LIKE '%st%' AND age > 25").show()
+```
+
 #### I want to convert my PySpark DataFrame to a Pandas DataFrame
 
 ```python
-df.toPandas()
+pandas_df = df.toPandas()
 ```
 
 #### I want to convert my Pandas DataFrame to a PySpark DataFrame
