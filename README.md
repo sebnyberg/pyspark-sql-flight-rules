@@ -1,4 +1,4 @@
-# PySpark SQL Flight Guide
+# PySpark SQL Flight Rules
 
 Learning how to use PySpark SQL is not all so straightforward as one would hope. This repository serves as a collection of answers to common scenarios you might find yourself in as you embark on your journey into pyspark sql.
 
@@ -180,6 +180,82 @@ joined_df = (
         .drop('joincol')
 )
 joined_df.show()
+```
+
+## Change column values
+
+### Change column type
+
+DataFrame:
+
+| name    | address       | zip   |
+| ------- | ------------- | ----- |
+| 'Bob'   | 'Brick St. 2' | 21522 |
+| 'Alice' | 'Olsvagen 12' | 31475 |
+
+Goal:
+
+| name    | address       | zip     |
+| ------- | ------------- | ------- |
+| 'Bob'   | 'Brick St. 2' | '21522' |
+| 'Alice' | 'Olsvagen 12' | '31475' |
+
+## Renaming columns
+
+### Rename a single column, keep others the same
+
+DataFrame:
+
+| name  | address     | age |
+| ----- | ----------- | --- |
+| Bob   | Brick St. 2 | 28  |
+| Alice | Olsvagen 12 | 28  |
+
+Goal:
+
+| first_name | address     | age |
+| ---------- | ----------- | --- |
+| Bob        | Brick St. 2 | 28  |
+| Alice      | Olsvagen 12 | 28  |
+
+```python
+df.selectExpr(['name as first_name', *df.drop('name').columns]).show()
+```
+
+### Rename many columns
+
+DataFrame:
+
+| name  | address     | age |
+| ----- | ----------- | --- |
+| Bob   | Brick St. 2 | 28  |
+| Alice | Olsvagen 12 | 28  |
+
+Goal:
+
+| first_name | person_address | person_age |
+| ---------- | -------------- | ---------- |
+| Bob        | Brick St. 2    | 28         |
+| Alice      | Olsvagen 12    | 28         |
+
+Plan:
+
+1. Create a list of select expressions: ["name as first_name", 'address as person_address', 'age as person_age']
+2. Use `selectExpr` to rename columns
+
+```python
+renames = {
+    'name': 'first_name',
+    'address': 'person_address',
+    'age': 'person_age'
+}
+rename_expr = [
+    '{} as {}'.format(key, value)
+    for key, value
+    in renames.items()
+]
+
+df.selectExpr(rename_expr).show()
 ```
 
 ## Conditional filtering
