@@ -17,36 +17,68 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
+- [SparkContext and SparkSession](#sparkcontext-and-sparksession)
+  - [Initialize a SparkSession](#initialize-a-sparksession)
+  - [Retrieve the SparkContext from an existing SparkSession](#retrieve-the-sparkcontext-from-an-existing-sparksession)
+  - [Retrieve the SQLContext](#retrieve-the-sqlcontext)
 - [Reading files](#reading-files)
   - [I want to read a CSV file](#i-want-to-read-a-csv-file)
-- [DataFrame operations](#dataframe-operations)
-  - [DataFrame properties](#dataframe-properties)
-    - [I want to know the types of the DataFrame columns](#i-want-to-know-the-types-of-the-dataframe-columns)
-    - [I want to know the number of rows in the DataFrame](#i-want-to-know-the-number-of-rows-in-the-dataframe)
-    - [I want a summary of the DataFrame](#i-want-a-summary-of-the-dataframe)
-  - [DataFrame -> DataFrame](#dataframe---dataframe)
-    - [I want to limit the number of rows](#i-want-to-limit-the-number-of-rows)
-    - [I want to select columns by name](#i-want-to-select-columns-by-name)
-    - [I want to convert my PySpark DataFrame to a Pandas DataFrame](#i-want-to-convert-my-pyspark-dataframe-to-a-pandas-dataframe)
-    - [I want to convert my Pandas DataFrame to a PySpark DataFrame](#i-want-to-convert-my-pandas-dataframe-to-a-pyspark-dataframe)
-  - [DataFrame -> Rows](#dataframe---rows)
-    - [I want to extract top rows](#i-want-to-extract-top-rows)
-    - [I want to extract data from the DataFrame as a list](#i-want-to-extract-data-from-the-dataframe-as-a-list)
-- [Merging dataframes](#merging-dataframes)
+- [Simple operations](#simple-operations)
+  - [Show (a preview of) DataFrame content](#show-a-preview-of-dataframe-content)
+  - [Count (list) number of rows in the DataFrame](#count-list-number-of-rows-in-the-dataframe)
+  - [Return all row values](#return-all-row-values)
+  - [Return some (head) values](#return-some-head-values)
+  - [Limit number of rows](#limit-number-of-rows)
+  - [Select columns](#select-columns)
+  - [Select and rename](#select-and-rename)
+  - [Rename column in-place](#rename-column-in-place)
+  - [Add (copy) a column](#add-copy-a-column)
+  - [Filter rows](#filter-rows)
+  - [Filter rows with SQL](#filter-rows-with-sql)
+  - [Remove (drop) rows with null values](#remove-drop-rows-with-null-values)
+  - [Drop column(s)](#drop-columns)
+  - [Group by column and count occurrences](#group-by-column-and-count-occurrences)
+  - [Print the column types (schema) of the DataFrame](#print-the-column-types-schema-of-the-dataframe)
+  - [Statistical summary of columns in the DataFrame (avg, mean, std)](#statistical-summary-of-columns-in-the-dataframe-avg-mean-std)
+  - [Convert from Pandas -> PySpark](#convert-from-pandas---pyspark)
+  - [Convert from PySpark -> Pandas](#convert-from-pyspark---pandas)
+- [Transformation examples](#transformation-examples)
+  - [Change a column in-place using a function](#change-a-column-in-place-using-a-function)
+  - [Add a new column with the same value on all rows](#add-a-new-column-with-the-same-value-on-all-rows)
+  - [Concatenate two columns into a new column](#concatenate-two-columns-into-a-new-column)
   - [Add a dataframe to the bottom of another dataframe](#add-a-dataframe-to-the-bottom-of-another-dataframe)
   - [Add a dataframe to the right end of another dataframe](#add-a-dataframe-to-the-right-end-of-another-dataframe)
-- [Adding columns](#adding-columns)
-  - [Add a new column with the same value for all rows](#add-a-new-column-with-the-same-value-for-all-rows)
   - [Add a column from another dataframe](#add-a-column-from-another-dataframe)
-- [Changing column values](#changing-column-values)
-  - [Change column type](#change-column-type)
-- [Renaming columns](#renaming-columns)
-  - [Rename a single column, keep others the same](#rename-a-single-column-keep-others-the-same)
   - [Rename many columns](#rename-many-columns)
-- [Conditional filtering](#conditional-filtering)
-  - [Show rows which are (not) null](#show-rows-which-are-not-null)
+- [User-Defined Functions (UDF)](#user-defined-functions-udf)
+  - [UDF: Add or change a column using a lambda function](#udf-add-or-change-a-column-using-a-lambda-function)
+  - [UDF: Add or change a column using an imported function](#udf-add-or-change-a-column-using-an-imported-function)
+  - [UDF: calculate new column value based off several other columns in the same row](#udf-calculate-new-column-value-based-off-several-other-columns-in-the-same-row)
+  - [UDF: custom function with more than one argument](#udf-custom-function-with-more-than-one-argument)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## SparkContext and SparkSession
+
+### Initialize a SparkSession
+
+```python
+spark = pyspark.sql.SparkSession.builder.appName('myapp').getOrCreate()
+```
+
+### Retrieve the SparkContext from an existing SparkSession
+
+The SparkContext is available as an attribute of your SparkSession:
+
+```python
+spark = pyspark.sql.SparkSession.builder.appName('myapp').getOrCreate()
+sc = spark.sparkContext
+```
+
+### Retrieve the SQLContext
+
+SQL Context is an old (1.x) name for SparkSession, see SparkSession
 
 ## Reading files
 
@@ -58,103 +90,195 @@ If `header` is set to `False`, the header will be skipped.
 df = spark.read.csv('path/to/file.csv', sep=';', header=True, inferSchema=True)
 ```
 
-## Basic DataFrame operations
+## Simple operations
 
-### DataFrame properties
-
-#### I want to know the types of the DataFrame columns
-
-```python
-df.printSchema()
-```
-
-#### I want to know the number of rows in the DataFrame
-
-```python
-df.count()
-```
-
-#### I want a summary of the DataFrame
+### Show (a preview of) DataFrame content
 
 ```python
 df.show()
 ```
 
-#### I want a statistical summary of columns in the DataFrame (avg, mean, std)
+### Count (list) number of rows in the DataFrame
 
 ```python
-df.describe().show()
+df.count()
 ```
 
-### DataFrame -> DataFrame
-
-#### I want to select N rows
-
-```python
-df.limit(1).show()
-```
-
-#### I want to select columns by name
-
-```python
-df.select('name', 'age').show()
-df.select(['name', 'age']).show()
-```
-
-#### I want to filter rows based off a column value
-
-The filter function `filter` is an alias for `where`. Both can be used interchangably.
-
-Beware that in SQL, the equality operator is a single equals sign `=`. Below are some examples with different ways of referencing dataframe columns, I recommend using the `df['column_name']` or `df.column_name` syntax because it gives you autocompletion.
-
-```python
-df.filter(df.name == 'Bob').show()
-df.filter(df['name'] == 'Bob').show()
-df.filter(col('name') == 'Bob').show()
-df.filter("name = 'Bob'").show()
-```
-
-#### I want to filter rows based off many column values
-
-Filtering many column values requires you to use bitwise operators (and: `&`, or: `|`) and to evaluate conditions inside parenthesis.
-
-```python
-df.where((df.address.contains('st')) & (df.age > 25)).show()
-df.where("address LIKE '%st%' AND age > 25").show()
-```
-
-#### I want to convert my PySpark DataFrame to a Pandas DataFrame
-
-```python
-pandas_df = df.toPandas()
-```
-
-#### I want to convert my Pandas DataFrame to a PySpark DataFrame
-
-```python
-data = {
-    'name': ['Alice', 'Bob'],
-    'age': [28, 28]
-}
-pandas_df = pd.DataFrame(data=data)
-pyspark_df = spark.createDataFrame(pandas_df)
-```
-
-### DataFrame -> Rows
-
-#### I want to extract top rows
-
-```python
-df.head(5)
-```
-
-#### I want to extract data from the DataFrame as a list
+### Return all row values
 
 ```python
 df.collect()
 ```
 
-## Merging dataframes
+### Return some (head) values
+
+```python
+df.head(5)
+```
+
+### Limit number of rows
+
+```python
+df.limit(1)
+```
+
+### Select columns
+
+```python
+df.select('name', 'age')
+```
+
+### Select and rename
+
+```python
+df.select('name as first_name', 'age')
+```
+
+### Rename column in-place
+
+```python
+df.withColumnRenamed('name', 'first_name')
+```
+
+### Add (copy) a column
+
+```python
+df.withColumn('age_copy', df['age'])
+```
+
+### Filter rows
+
+`where` and `filter` are analogous:
+
+```python
+old_people = df.where(df['age'] > 30)
+quite_old_people = df.where(
+  (df['age'] > 30)
+  & (df['age'] < 40)
+)
+```
+
+### Filter rows with SQL
+
+```python
+old_people = df.where('age > 30')
+quite_old_people = df.where('age BETWEEN 30 AND 40')
+```
+
+### Remove (drop) rows with null values
+
+`where` and `filter` are analogous:
+
+```python
+df.where(df['address'].isNotNull())
+```
+
+### Drop column(s)
+
+```python
+df.drop('name')
+df.drop('name', 'age')
+```
+
+### Group by column and count occurrences
+
+```python
+df.groupBy('age').count()
+```
+
+### Print the column types (schema) of the DataFrame
+
+```python
+df.printSchema()
+```
+
+### Statistical summary of columns in the DataFrame (avg, mean, std)
+
+```python
+df.describe().show()
+```
+
+### Convert from Pandas -> PySpark
+
+```python
+pandas_df = pyspark_df.toPandas()
+```
+
+### Convert from PySpark -> Pandas
+
+```python
+pyspark_df = spark.createDataFrame(pandas_df)
+```
+
+## Transformation examples
+
+### Change a column in-place using a function
+
+DataFrame:
+
+| name  | address     | city      |
+| ----- | ----------- | --------- |
+| Bob   | Brick St. 2 | Lund      |
+| Alice | Olsvagen 12 | STOCKHOLM |
+
+Goal:
+
+| name  | address     | city      |
+| ----- | ----------- | --------- |
+| Bob   | Brick St. 2 | LUND      |
+| Alice | Olsvagen 12 | STOCKHOLM |
+
+```python
+from pyspark.sql.functions import upper
+
+df.withColumn('city', upper(df['city']))
+```
+
+### Add a new column with the same value on all rows
+
+DataFrame:
+
+| name  | address     |
+| ----- | ----------- |
+| Bob   | Brick St. 2 |
+| Alice | Olsvagen 12 |
+
+Goal:
+
+| name  | address     | age |
+| ----- | ----------- | --- |
+| Bob   | Brick St. 2 | 28  |
+| Alice | Olsvagen 12 | 28  |
+
+Add a new column with a literal value using `lit`:
+
+```python
+from pyspark.sql.functions import lit
+
+df.withColumn('age', lit(28))
+```
+
+### Concatenate two columns into a new column
+
+DataFrame:
+
+| first_name | last_name | address     | age |
+| ---------- | --------- | ----------- | --- |
+| Bob        | Barker    | Brick St. 2 | 28  |
+| Alice      | Smith     | Olsvagen 12 | 28  |
+
+Goal:
+
+| first_name | last_name | address     | age | full_name   |
+| ---------- | --------- | ----------- | --- | ----------- |
+| Bob        | Barker    | Brick St. 2 | 28  | Bob Barker  |
+| Alice      | Smith     | Olsvagen 12 | 28  | Alice Smith |
+
+```python
+from pyspark.sql.functions import concat, lit
+
+df.withColumn('full_name', concat(df['first_name'], lit(' '), df['last_name']))
+```
 
 ### Add a dataframe to the bottom of another dataframe
 
@@ -233,32 +357,6 @@ joined_df = (
 joined_df.show()
 ```
 
-## Adding columns
-
-### Add a new column with the same value for all rows
-
-DataFrame:
-
-| name  | address     |
-| ----- | ----------- |
-| Bob   | Brick St. 2 |
-| Alice | Olsvagen 12 |
-
-Goal:
-
-| name  | address     | age |
-| ----- | ----------- | --- |
-| Bob   | Brick St. 2 | 28  |
-| Alice | Olsvagen 12 | 28  |
-
-Add a new column with a literal value using `lit`:
-
-```python
-from pyspark.sql.functions import lit
-
-df.withColumn('age', lit(28))
-```
-
 ### Add a column from another dataframe
 
 DataFrame 1:
@@ -307,46 +405,6 @@ joined_df = (
 joined_df.show()
 ```
 
-## Changing column values
-
-### Change column type
-
-DataFrame:
-
-| name    | address       | zip   |
-| ------- | ------------- | ----- |
-| 'Bob'   | 'Brick St. 2' | 21522 |
-| 'Alice' | 'Olsvagen 12' | 31475 |
-
-Goal:
-
-| name    | address       | zip     |
-| ------- | ------------- | ------- |
-| 'Bob'   | 'Brick St. 2' | '21522' |
-| 'Alice' | 'Olsvagen 12' | '31475' |
-
-## Renaming columns
-
-### Rename a single column, keep others the same
-
-DataFrame:
-
-| name  | address     | age |
-| ----- | ----------- | --- |
-| Bob   | Brick St. 2 | 28  |
-| Alice | Olsvagen 12 | 28  |
-
-Goal:
-
-| first_name | address     | age |
-| ---------- | ----------- | --- |
-| Bob        | Brick St. 2 | 28  |
-| Alice      | Olsvagen 12 | 28  |
-
-```python
-df.selectExpr(['name as first_name', *df.drop('name').columns]).show()
-```
-
 ### Rename many columns
 
 DataFrame:
@@ -383,32 +441,109 @@ rename_expr = [
 df.selectExpr(rename_expr).show()
 ```
 
-## Conditional filtering
+## User-Defined Functions (UDF)
 
-### Show rows which are (not) null
-
-Given the dataframe
-
-| name  | address     |
-| ----- | ----------- |
-| Bob   | Brick St. 2 |
-| Alice | null        |
-
-You can show rows which are (not) null with:
+### UDF: Add or change a column using a lambda function
 
 ```python
-df.where(df['address'].isNull()).show()
-df.where(df['address'].isNotNull()).show()
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+wrap_in_quotes = udf(lambda text: '"' + text + '"', StringType())
+
+member_pages.withColumn('quoted_biography', wrap_in_quotes(member_pages['biography']))
+```
+
+### UDF: Add or change a column using an imported function
+
+**IMPORTANT**: importing external functions will not work unless you first add the Python file to the SparkContext. Failing to do so will result in an ambiguous error.
+
+```python
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+spark.sparkContext.addPyFile('src/util/string_helpers.py)
+from string_helpers import wrap_in_quotes as _wrap_in_quotes
+
+wrap_in_quotes = udf(_wrap_in_quotes, StringType())
+
+member_pages.withColumn('quoted_biography', wrap_in_quotes(member_pages['biography']))
+```
+
+### UDF: calculate new column value based off several other columns in the same row
+
+Note: there are better ways to do what this example does, for example with the function `concat` or `concat_ws`. This is simply for demonstrational purposes.
+
+The function `struct` can be used to create a column which contains many other columns.
+
+DataFrame:
+
+| first_name | last_name | address     | age |
+| ---------- | --------- | ----------- | --- |
+| Bob        | Barker    | Brick St. 2 | 28  |
+| Alice      | Smith     | Olsvagen 12 | 28  |
+
+```python
+from pyspark.sql.functions import struct
+
+df.withColumn('name_arr', struct('first_name', 'last_name')).show()
 ```
 
 Result:
 
-| name  | address |
-| ----- | ------- |
-| Alice | null    |
+| first_name | last_name | address     | age | full_name_arr  |
+| ---------- | --------- | ----------- | --- | -------------- |
+| Bob        | Barker    | Brick St. 2 | 28  | [Bob, Barker]  |
+| Alice      | Smith     | Olsvagen 12 | 28  | [Alice, Smith] |
 
-and
+Using this method, we can use several columns inside our user-defined function:
 
-| name | address     |
-| ---- | ----------- |
-| Bob  | Brick St. 2 |
+```python
+from pyspark.sql.functions import udf, struct
+from pyspark.sql.types import StringType
+
+join_columns_with_space = udf(lambda row: ' '.join(row), StringType())
+df.withColumn('full_name', join_columns_with_space(struct('first_name', 'last_name'))).show()
+
+# this works too (the row is a named tuple):
+concat_names = udf(lambda row: row['first_name'] + ' ' + row['last_name'], StringType())
+df.withColumn('full_name', concat_names(struct('first_name', 'last_name'))).show()
+```
+
+Result:
+
+| first_name | last_name | address     | age | full_name   |
+| ---------- | --------- | ----------- | --- | ----------- |
+| Bob        | Barker    | Brick St. 2 | 28  | Bob Barker  |
+| Alice      | Smith     | Olsvagen 12 | 28  | Alice Smith |
+
+### UDF: custom function with more than one argument
+
+This example works similarly to the built-in function `concat_ws`. We want to pass the separator and some columns to our own `join_with_separator` function.
+
+DataFrame:
+
+| first_name | last_name | address     | age |
+| ---------- | --------- | ----------- | --- |
+| Bob        | Barker    | Brick St. 2 | 28  |
+| Alice      | Smith     | Olsvagen 12 | 28  |
+
+```python
+from pyspark.sql.functions import udf, struct
+from pyspark.sql.types import StringType
+
+def join_with_separator(sep, *args):
+  def _join_with_separator(row):
+    return sep.join(row)
+
+  return udf(_join_with_separator, StringType())(struct(*args))
+
+grs_locations.withColumn('full_name', join_with_separator(' ', df['first_name'], df['last_name'])).show()
+```
+
+Result:
+
+| first_name | last_name | address     | age | full_name   |
+| ---------- | --------- | ----------- | --- | ----------- |
+| Bob        | Barker    | Brick St. 2 | 28  | Bob Barker  |
+| Alice      | Smith     | Olsvagen 12 | 28  | Alice Smith |
