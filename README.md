@@ -23,7 +23,7 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
   - [Retrieve the SparkContext from an existing SparkSession](#retrieve-the-sparkcontext-from-an-existing-sparksession)
   - [Retrieve the SQLContext](#retrieve-the-sqlcontext)
 - [Reading files](#reading-files)
-  - [I want to read a CSV file](#i-want-to-read-a-csv-file)
+  - [Read a CSV file](#read-a-csv-file)
 - [Simple operations](#simple-operations)
   - [Show (a preview of) DataFrame content](#show-a-preview-of-dataframe-content)
   - [Count (list) number of rows in the DataFrame](#count-list-number-of-rows-in-the-dataframe)
@@ -45,15 +45,15 @@ spark = SparkSession.builder.appName('myapp').getOrCreate()
   - [Convert from PySpark -> Pandas](#convert-from-pyspark---pandas)
 - [Transformation examples](#transformation-examples)
   - [Change a column in-place using a function](#change-a-column-in-place-using-a-function)
-  - [Add a new column with the same value on all rows](#add-a-new-column-with-the-same-value-on-all-rows)
   - [Concatenate two columns into a new column](#concatenate-two-columns-into-a-new-column)
+  - [Add a new column with the same value on all rows](#add-a-new-column-with-the-same-value-on-all-rows)
   - [Add a dataframe to the bottom of another dataframe](#add-a-dataframe-to-the-bottom-of-another-dataframe)
   - [Add a dataframe to the right end of another dataframe](#add-a-dataframe-to-the-right-end-of-another-dataframe)
   - [Add a column from another dataframe](#add-a-column-from-another-dataframe)
   - [Rename many columns](#rename-many-columns)
 - [User-Defined Functions (UDF)](#user-defined-functions-udf)
-  - [UDF: Add or change a column using a lambda function](#udf-add-or-change-a-column-using-a-lambda-function)
-  - [UDF: Add or change a column using an imported function](#udf-add-or-change-a-column-using-an-imported-function)
+  - [UDF: add or change a column using a lambda function](#udf-add-or-change-a-column-using-a-lambda-function)
+  - [UDF: add or change a column using an imported function](#udf-add-or-change-a-column-using-an-imported-function)
   - [UDF: calculate new column value based off several other columns in the same row](#udf-calculate-new-column-value-based-off-several-other-columns-in-the-same-row)
   - [UDF: custom function with more than one argument](#udf-custom-function-with-more-than-one-argument)
 
@@ -82,7 +82,7 @@ SQL Context is an old (1.x) name for SparkSession, see SparkSession
 
 ## Reading files
 
-### I want to read a CSV file
+### Read a CSV file
 
 If `header` is set to `False`, the header will be skipped.
 
@@ -234,6 +234,28 @@ from pyspark.sql.functions import upper
 df.withColumn('city', upper(df['city']))
 ```
 
+### Concatenate two columns into a new column
+
+DataFrame:
+
+| first_name | last_name | address     | age |
+| ---------- | --------- | ----------- | --- |
+| Bob        | Barker    | Brick St. 2 | 28  |
+| Alice      | Smith     | Olsvagen 12 | 28  |
+
+Goal:
+
+| first_name | last_name | address     | age | full_name   |
+| ---------- | --------- | ----------- | --- | ----------- |
+| Bob        | Barker    | Brick St. 2 | 28  | Bob Barker  |
+| Alice      | Smith     | Olsvagen 12 | 28  | Alice Smith |
+
+```python
+from pyspark.sql.functions import concat, lit
+
+df.withColumn('full_name', concat(df['first_name'], lit(' '), df['last_name']))
+```
+
 ### Add a new column with the same value on all rows
 
 DataFrame:
@@ -256,28 +278,6 @@ Add a new column with a literal value using `lit`:
 from pyspark.sql.functions import lit
 
 df.withColumn('age', lit(28))
-```
-
-### Concatenate two columns into a new column
-
-DataFrame:
-
-| first_name | last_name | address     | age |
-| ---------- | --------- | ----------- | --- |
-| Bob        | Barker    | Brick St. 2 | 28  |
-| Alice      | Smith     | Olsvagen 12 | 28  |
-
-Goal:
-
-| first_name | last_name | address     | age | full_name   |
-| ---------- | --------- | ----------- | --- | ----------- |
-| Bob        | Barker    | Brick St. 2 | 28  | Bob Barker  |
-| Alice      | Smith     | Olsvagen 12 | 28  | Alice Smith |
-
-```python
-from pyspark.sql.functions import concat, lit
-
-df.withColumn('full_name', concat(df['first_name'], lit(' '), df['last_name']))
 ```
 
 ### Add a dataframe to the bottom of another dataframe
@@ -443,7 +443,7 @@ df.selectExpr(rename_expr).show()
 
 ## User-Defined Functions (UDF)
 
-### UDF: Add or change a column using a lambda function
+### UDF: add or change a column using a lambda function
 
 ```python
 from pyspark.sql.functions import udf
@@ -454,7 +454,7 @@ wrap_in_quotes = udf(lambda text: '"' + text + '"', StringType())
 member_pages.withColumn('quoted_biography', wrap_in_quotes(member_pages['biography']))
 ```
 
-### UDF: Add or change a column using an imported function
+### UDF: add or change a column using an imported function
 
 **IMPORTANT**: importing external functions will not work unless you first add the Python file to the SparkContext. Failing to do so will result in an ambiguous error.
 
